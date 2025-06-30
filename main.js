@@ -8,11 +8,11 @@ let enteredPlate = '';
 // ======== DOM 요소 ========
 const pages = document.querySelectorAll('.page');
 const inputs = {
-  plate: document.getElementById('plate'),
+  busNo: document.getElementById('busNo'),
   photo: document.getElementById('photo')
 };
 const buttons = {
-  b2: document.getElementById('b2'),
+  b1: document.getElementById('b1'),
   b3: document.getElementById('b3')
 };
 const preview = document.getElementById('preview');
@@ -31,6 +31,11 @@ const BUSNO_LIST = {
   '노포': ['29', '80', '300'],
   '정관': ['73', '73 (오전)', '106', '107', '184', '188']
 };
+
+// 29번 노선의 차량번호 리스트
+const PLATE_LIST_29 = [
+  '2932','2933','3102','3105','3106','3108','3120','3121','3131','3133','3137','3139','3142','3144','3145','3147','3151','3152','3168','3174','3190','3192','3199','3201','3204','3223','3300'
+];
 
 // ======== 유효성 검사 함수들 ========
 const validators = {
@@ -187,22 +192,6 @@ function renderBusNoButtons(site) {
   });
 }
 
-// ======== 면허판번호 입력 ========
-inputs.plate.addEventListener('input', (e) => {
-  const isValid = validateInput('plate', e.target.value);
-  updateButtonState('b2', isValid);
-  enteredPlate = e.target.value;
-  updateBreadcrumb();
-});
-
-buttons.b2.addEventListener('click', () => {
-  if (validateInput('plate', inputs.plate.value)) {
-    enteredPlate = inputs.plate.value;
-    updateBreadcrumb();
-    nextStep();
-  }
-});
-
 // ======== 사진 업로드 ========
 inputs.photo.addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -317,4 +306,100 @@ function updateBreadcrumb() {
   if (selectedBusNo) crumbs.push(`<span class="crumb">노선번호: ${selectedBusNo}</span>`);
   if (enteredPlate) crumbs.push(`<span class="crumb">면허판번호: ${enteredPlate}</span>`);
   breadcrumb.innerHTML = crumbs.join('<span class="sep">&gt;</span>');
-} 
+}
+
+// 면허판번호 입력(3단계) 그리드 버튼만 (입력창 제거)
+function renderPlateGrid() {
+  // 3단계 카드의 .card-content를 찾음
+  const cards = document.querySelectorAll('.card');
+  const cardContent = cards[2]?.querySelector('.card-content');
+  if (!cardContent) return;
+  // 기존 plate-grid/검색창/에러메시지 있으면 제거
+  let plateGridDiv = cardContent.querySelector('#plate-grid');
+  if (plateGridDiv) cardContent.removeChild(plateGridDiv);
+  let filterInput = cardContent.querySelector('#plate-filter');
+  if (filterInput) cardContent.removeChild(filterInput);
+  let errorMsg = cardContent.querySelector('#plate-filter-error');
+  if (errorMsg) cardContent.removeChild(errorMsg);
+  // 검색창 생성 (위치 고정)
+  filterInput = document.createElement('input');
+  filterInput.id = 'plate-filter';
+  filterInput.type = 'text';
+  filterInput.placeholder = '차량번호 검색(숫자 입력)';
+  filterInput.inputMode = 'numeric';
+  filterInput.autocomplete = 'off';
+  filterInput.style.marginBottom = '0.5rem';
+  filterInput.style.width = '100%';
+  cardContent.appendChild(filterInput);
+  // 에러 메시지 생성
+  errorMsg = document.createElement('div');
+  errorMsg.id = 'plate-filter-error';
+  errorMsg.style.color = '#dc2626';
+  errorMsg.style.fontSize = '0.98rem';
+  errorMsg.style.height = '1.2em';
+  errorMsg.style.marginBottom = '0.5rem';
+  errorMsg.style.textAlign = 'left';
+  errorMsg.textContent = '';
+  cardContent.appendChild(errorMsg);
+  // plate-grid 생성 (min-height 고정)
+  plateGridDiv = document.createElement('div');
+  plateGridDiv.id = 'plate-grid';
+  plateGridDiv.style.display = 'grid';
+  plateGridDiv.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  plateGridDiv.style.gap = '0.7rem';
+  plateGridDiv.style.maxHeight = '320px';
+  plateGridDiv.style.minHeight = '320px';
+  plateGridDiv.style.overflowY = 'auto';
+  plateGridDiv.style.overflowX = 'hidden';
+  plateGridDiv.style.width = '100%';
+  plateGridDiv.style.marginBottom = '1.2rem';
+  cardContent.appendChild(plateGridDiv);
+  // 렌더링 함수
+  function renderGrid() {
+    // 애니메이션 적용을 위해 기존 버튼에 exit 클래스 부여 후 제거
+    const oldBtns = Array.from(plateGridDiv.children);
+    oldBtns.forEach(btn => {
+      btn.classList.add('fade-exit');
+      setTimeout(() => btn.remove(), 200);
+    });
+    let list = [];
+    if (selectedBusNo === '29') list = PLATE_LIST_29;
+    const filter = filterInput.value.trim();
+    // 숫자 이외 입력 체크
+    if (filter && /[^0-9]/.test(filter)) {
+      errorMsg.textContent = '숫자만 입력해주세요!';
+      return;
+    } else {
+      errorMsg.textContent = '';
+    }
+    const filtered = filter ? list.filter(num => num.includes(filter)) : list;
+    // 버튼이 줄어들수록 행이 커지도록
+    const rowCount = Math.max(Math.ceil(filtered.length / 3), 1);
+    plateGridDiv.style.gridTemplateRows = `repeat(${rowCount}, 1fr)`;
+    filtered.forEach(num => {
+      const btn = document.createElement('button');
+      btn.className = 'plate-btn fade-in';
+      btn.textContent = num;
+      btn.setAttribute('aria-label', `차량번호 ${num}`);
+      btn.tabIndex = 0;
+      btn.onclick = () => {
+        enteredPlate = num;
+        updateBreadcrumb();
+        nextStep();
+      };
+      btn.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') btn.click();
+      };
+      plateGridDiv.appendChild(btn);
+      setTimeout(() => btn.classList.remove('fade-in'), 250);
+    });
+  }
+  filterInput.addEventListener('input', renderGrid);
+  renderGrid();
+}
+
+const origShowPage = window.showPage || showPage;
+window.showPage = function(pageIndex, pushHistory) {
+  origShowPage.apply(this, arguments);
+  if (pageIndex === 2) renderPlateGrid();
+}; 

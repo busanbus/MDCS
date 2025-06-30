@@ -26,7 +26,7 @@
 <header>
   <!-- 로고 이미지: 업로드하신 PNG를 logo.png로 저장하여 같은 폴더에 두세요 -->
   <img src="logo.png" alt="세진여객 로고">
-  <h2>운행전 자가점검시스템</h2>
+  <h2 style="font-size: 1.2rem;">운행전 자가점검시스템 (MDCS)</h2>
 </header>
 <nav class="breadcrumb" id="breadcrumb"></nav>
 
@@ -34,6 +34,7 @@
 <section id="p0" class="page active">
   <div class="card">
     <h1>1. 근무지를 선택하세요</h1>
+    <img src="bus_illustration.png" alt="버스 일러스트" style="display:block;margin:0 auto 1.5rem auto;width:120px;height:120px;object-fit:contain;" />
     <div class="card-content">
       <div class="site-buttons">
         <button id="site-nopo" class="site-btn">노포</button>
@@ -58,10 +59,9 @@
 <!-- ======== STEP 2 : 면허판번호 ======== -->
 <section id="p2" class="page">
   <div class="card">
-    <h1>3. 면허판 번호를 입력하세요</h1>
+    <h1>차량번호를 선택하세요</h1>
     <div class="card-content">
-      <input id="plate" placeholder="예) 70가1234">
-      <button id="b2" disabled>다음</button>
+      <!-- plate-grid와 prevBtn만 남김 -->
     </div>
     <div class="card-actions"><button class="prevBtn">이전</button></div>
   </div>
