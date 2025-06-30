@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>운행전 자가점검시스템</title>
+
+<!-- PWA 메타 태그 -->
+<meta name="description" content="부산 세진여객 운전기사 운행전 자가점검시스템">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="세진여객 점검">
+
+<!-- PWA 아이콘 -->
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<link rel="manifest" href="/manifest.json">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ======== 헤더 ======== -->
+<header>
+  <!-- 로고 이미지: 업로드하신 PNG를 logo.png로 저장하여 같은 폴더에 두세요 -->
+  <img src="logo.png" alt="세진여객 로고">
+  <h2 style="font-size: 1.3em;">운행전 자가점검시스템 (MDCS)</h2>
+</header>
+<nav class="breadcrumb" id="breadcrumb"></nav>
+
+<!-- ======== STEP 0 : 근무지 선택 ======== -->
+<section id="p0" class="page active">
+  <div class="card">
+    <h1>1. 근무지를 선택하세요</h1>
+    <div class="card-content">
+      <div class="site-buttons">
+        <button id="site-nopo" class="site-btn">노포</button>
+        <button id="site-jeonggwan" class="site-btn">정관</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== STEP 1 : 버스번호 선택 ======== -->
+<section id="p1" class="page">
+  <div class="card">
+    <h1>2. 노선번호를 선택하세요</h1>
+    <div class="card-content">
+      <div class="busno-buttons" id="busno-buttons"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== STEP 2 : 면허판번호 ======== -->
+<section id="p2" class="page">
+  <div class="card">
+    <h1>3. 면허판 번호를 입력하세요</h1>
+    <div class="card-content">
+      <input id="plate" placeholder="예) 70가1234">
+      <button id="b2" disabled>다음</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======== STEP 3 : 복장 사진 ======== -->
+<section id="p3" class="page">
+  <div class="card">
+    <h1>복장 사진을 첨부하세요</h1>
+    <div class="card-content">
+      <input id="photo" type="file" accept="image/*" capture="environment">
+      <img id="preview" alt="">
+      <button id="b3" disabled>제출</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 완료 화면 ======== -->
+<section id="done" class="page">
+  <div class="card">
+    <h1 class="success-title">✅ 제출 완료!</h1>
+    <p class="success-message">안전 운행 하십시오.</p>
+  </div>
+</section>
+
+<div id="modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-message" id="modal-message"></div>
+    <div class="modal-actions">
+      <button id="modal-yes" class="modal-btn modal-yes">네</button>
+      <button id="modal-no" class="modal-btn modal-no">아니오</button>
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html> 

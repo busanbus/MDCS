@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오프라인 - 운행전 자가점검시스템</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    background: #f9fafb;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+  }
+  
+  .offline-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .offline-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #dc2626;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  
+  .retry-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .retry-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+  }
+  
+  .logo {
+    height: 40px;
+    margin-bottom: 1rem;
+  }
+</style>
+</head>
+<body>
+  <div class="offline-card">
+    <img src="logo.png" alt="세진여객 로고" class="logo">
+    <div class="offline-icon">📶</div>
+    <h1>네트워크 연결 없음</h1>
+    <p>인터넷 연결을 확인하고 다시 시도해주세요.</p>
+    <button class="retry-btn" onclick="window.location.reload()">다시 시도</button>
+  </div>
+  
+  <script>
+    // 네트워크 상태 모니터링
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+    
+    // 30초마다 자동 새로고침 시도
+    setInterval(() => {
+      if (navigator.onLine) {
+        window.location.reload();
+      }
+    }, 30000);
+  </script>
+</body>
+</html> 
