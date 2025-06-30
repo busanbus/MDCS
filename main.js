@@ -73,12 +73,31 @@ function updateButtonState(buttonId, isValid) {
   }
 }
 
-function showPage(pageIndex) {
+function getCurrentPrevBtn() {
+  const cards = document.querySelectorAll('.card');
+  return cards[currentStep]?.querySelector('.prevBtn');
+}
+
+function updatePrevBtn() {
+  document.querySelectorAll('.prevBtn').forEach((btn, idx) => {
+    btn.disabled = (currentStep === 0);
+    btn.onclick = null;
+    if (idx === currentStep && currentStep > 0) {
+      btn.onclick = () => showPage(currentStep - 1, true);
+    }
+  });
+}
+
+function showPage(pageIndex, pushHistory = false) {
   pages.forEach((page, index) => {
     page.classList.toggle('active', index === pageIndex);
   });
   currentStep = pageIndex;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  updatePrevBtn();
+  if (pushHistory) {
+    history.pushState({ pageIndex: currentStep }, '', '');
+  }
 }
 
 function nextStep() {
@@ -241,7 +260,7 @@ document.addEventListener('keydown', (e) => {
 
 // ======== 초기화 ========
 document.addEventListener('DOMContentLoaded', () => {
-  showPage(0);
+  showPage(0, true);
   updateBreadcrumb();
   console.log('운행전 자가점검시스템이 로드되었습니다.');
 });
