@@ -114,7 +114,7 @@ function showModal(message, onConfirm) {
 
 // ======== 근무지 선택 이벤트 리스너 ========
 siteButtons.nopo.addEventListener('click', () => {
-  showModal('근무지 : 노포가 맞으십니까?', (ok) => {
+  showModal('근무지 : 노포(이)가 맞으십니까?', (ok) => {
     if (!ok) return;
     selectedSite = '노포';
     selectedBusNo = '';
@@ -126,7 +126,7 @@ siteButtons.nopo.addEventListener('click', () => {
 });
 
 siteButtons.jeonggwan.addEventListener('click', () => {
-  showModal('근무지 : 정관이 맞으십니까?', (ok) => {
+  showModal('근무지 : 정관(이)가 맞으십니까?', (ok) => {
     if (!ok) return;
     selectedSite = '정관';
     selectedBusNo = '';
@@ -145,7 +145,7 @@ function renderBusNoButtons(site) {
     btn.className = 'busno-btn';
     btn.textContent = busNo;
     btn.onclick = () => {
-      showModal(`노선번호 : ${busNo}가 맞으십니까?`, (ok) => {
+      showModal(`노선번호 : ${busNo}(이)가 맞으십니까?`, (ok) => {
         if (!ok) return;
         selectedBusNo = busNo;
         updateBreadcrumb();
