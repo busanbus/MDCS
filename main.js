@@ -83,26 +83,38 @@ function updatePrevBtn() {
     btn.disabled = (currentStep === 0);
     btn.onclick = null;
     if (idx === currentStep && currentStep > 0) {
-      btn.onclick = () => showPage(currentStep - 1, true);
+      btn.onclick = () => window.history.back();
     }
   });
 }
 
 function showPage(pageIndex, pushHistory = false) {
+  // 단계별로 입력값 초기화
+  if (pageIndex === 0) {
+    selectedSite = '';
+    selectedBusNo = '';
+    enteredPlate = '';
+  } else if (pageIndex === 1) {
+    selectedBusNo = '';
+    enteredPlate = '';
+  } else if (pageIndex === 2) {
+    enteredPlate = '';
+  }
   pages.forEach((page, index) => {
     page.classList.toggle('active', index === pageIndex);
   });
   currentStep = pageIndex;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   updatePrevBtn();
+  updateBreadcrumb();
   if (pushHistory) {
     history.pushState({ pageIndex: currentStep }, '', '');
   }
 }
 
 function nextStep() {
-  if (currentStep < totalSteps - 1) {
-    showPage(currentStep + 1);
+  if (currentStep < pages.length - 1) {
+    showPage(currentStep + 1, true);
   }
 }
 
@@ -260,9 +272,20 @@ document.addEventListener('keydown', (e) => {
 
 // ======== 초기화 ========
 document.addEventListener('DOMContentLoaded', () => {
-  showPage(0, true);
+  history.replaceState({ pageIndex: 0 }, '', '');
+  history.pushState({ pageIndex: 0 }, '', '');
+  showPage(0, false);
   updateBreadcrumb();
   console.log('운행전 자가점검시스템이 로드되었습니다.');
+});
+
+window.addEventListener('popstate', (event) => {
+  const pageIndex = event.state && typeof event.state.pageIndex === 'number' ? event.state.pageIndex : 0;
+  showPage(pageIndex, false);
+  // history가 1개뿐이면(첫 화면) 더 이상 뒤로가기를 막음
+  if (pageIndex === 0 && history.length <= 2) {
+    history.pushState({ pageIndex: 0 }, '', '');
+  }
 });
 
 // ======== 오프라인 지원 ========
