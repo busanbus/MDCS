@@ -530,4 +530,19 @@ button:disabled {
 }
 input[type="text"], input[type="file"] {
   min-height: 56px;
+}
+
+.plate-btn {
+  min-height: 64px;
+  height: 64px;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+#plate-grid > div {
+  min-height: 64px;
+  height: 64px;
 } 

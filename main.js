@@ -32,10 +32,20 @@ const BUSNO_LIST = {
   '정관': ['73', '73 (오전)', '106', '107', '184', '188']
 };
 
-// 29번 노선의 차량번호 리스트
-const PLATE_LIST_29 = [
-  '2932','2933','3102','3105','3106','3108','3120','3121','3131','3133','3137','3139','3142','3144','3145','3147','3151','3152','3168','3174','3190','3192','3199','3201','3204','3223','3300'
-];
+// ======== 노선별 차량번호 리스트(구글 시트 연동) ========
+let PLATE_LISTS = {};
+let plateDataLoaded = false;
+let plateDataError = false;
+fetch('https://script.google.com/macros/s/AKfycbxKXmbLSOl64gNdOoYIORQs1fpdHOHZuX7LGypDLlgacjKtNhiVTWef6_pBNNkd2cWE/exec')
+  .then(res => res.json())
+  .then(data => {
+    PLATE_LISTS = data;
+    plateDataLoaded = true;
+  })
+  .catch(err => {
+    plateDataError = true;
+    console.error('차량번호 데이터 불러오기 실패:', err);
+  });
 
 // ======== 유효성 검사 함수들 ========
 const validators = {
@@ -304,24 +314,21 @@ function updateBreadcrumb() {
   let crumbs = [];
   if (selectedSite) crumbs.push(`<span class="crumb">근무지: ${selectedSite}</span>`);
   if (selectedBusNo) crumbs.push(`<span class="crumb">노선번호: ${selectedBusNo}</span>`);
-  if (enteredPlate) crumbs.push(`<span class="crumb">면허판번호: ${enteredPlate}</span>`);
+  if (enteredPlate) crumbs.push(`<span class="crumb">차량번호: ${enteredPlate}</span>`);
   breadcrumb.innerHTML = crumbs.join('<span class="sep">&gt;</span>');
 }
 
-// 면허판번호 입력(3단계) 그리드 버튼만 (입력창 제거)
+// ======== renderPlateGrid 수정 ========
 function renderPlateGrid() {
-  // 3단계 카드의 .card-content를 찾음
   const cards = document.querySelectorAll('.card');
   const cardContent = cards[2]?.querySelector('.card-content');
   if (!cardContent) return;
-  // 기존 plate-grid/검색창/에러메시지 있으면 제거
   let plateGridDiv = cardContent.querySelector('#plate-grid');
   if (plateGridDiv) cardContent.removeChild(plateGridDiv);
   let filterInput = cardContent.querySelector('#plate-filter');
   if (filterInput) cardContent.removeChild(filterInput);
   let errorMsg = cardContent.querySelector('#plate-filter-error');
   if (errorMsg) cardContent.removeChild(errorMsg);
-  // 검색창 생성 (위치 고정)
   filterInput = document.createElement('input');
   filterInput.id = 'plate-filter';
   filterInput.type = 'text';
@@ -331,7 +338,6 @@ function renderPlateGrid() {
   filterInput.style.marginBottom = '0.5rem';
   filterInput.style.width = '100%';
   cardContent.appendChild(filterInput);
-  // 에러 메시지 생성
   errorMsg = document.createElement('div');
   errorMsg.id = 'plate-filter-error';
   errorMsg.style.color = '#dc2626';
@@ -341,7 +347,6 @@ function renderPlateGrid() {
   errorMsg.style.textAlign = 'left';
   errorMsg.textContent = '';
   cardContent.appendChild(errorMsg);
-  // plate-grid 생성 (min-height 고정)
   plateGridDiv = document.createElement('div');
   plateGridDiv.id = 'plate-grid';
   plateGridDiv.style.display = 'grid';
@@ -354,18 +359,30 @@ function renderPlateGrid() {
   plateGridDiv.style.width = '100%';
   plateGridDiv.style.marginBottom = '1.2rem';
   cardContent.appendChild(plateGridDiv);
-  // 렌더링 함수
   function renderGrid() {
-    // 애니메이션 적용을 위해 기존 버튼에 exit 클래스 부여 후 제거
     const oldBtns = Array.from(plateGridDiv.children);
     oldBtns.forEach(btn => {
       btn.classList.add('fade-exit');
       setTimeout(() => btn.remove(), 200);
     });
+    // 데이터 로딩 상태 처리
+    if (!plateDataLoaded) {
+      plateGridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-size:1.1rem;">차량번호 데이터를 불러오는 중...</div>';
+      return;
+    }
+    if (plateDataError) {
+      plateGridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#dc2626;font-size:1.1rem;">차량번호 데이터를 불러오지 못했습니다.</div>';
+      return;
+    }
     let list = [];
-    if (selectedBusNo === '29') list = PLATE_LIST_29;
-    const filter = filterInput.value.trim();
-    // 숫자 이외 입력 체크
+    if (selectedBusNo && PLATE_LISTS[selectedBusNo]) {
+      list = PLATE_LISTS[selectedBusNo];
+    }
+    let filter = filterInput.value.trim();
+    if (filter.length > 4) {
+      filter = filter.slice(0, 4);
+      filterInput.value = filter;
+    }
     if (filter && /[^0-9]/.test(filter)) {
       errorMsg.textContent = '숫자만 입력해주세요!';
       return;
@@ -373,26 +390,36 @@ function renderPlateGrid() {
       errorMsg.textContent = '';
     }
     const filtered = filter ? list.filter(num => num.includes(filter)) : list;
-    // 버튼이 줄어들수록 행이 커지도록
-    const rowCount = Math.max(Math.ceil(filtered.length / 3), 1);
-    plateGridDiv.style.gridTemplateRows = `repeat(${rowCount}, 1fr)`;
-    filtered.forEach(num => {
-      const btn = document.createElement('button');
-      btn.className = 'plate-btn fade-in';
-      btn.textContent = num;
-      btn.setAttribute('aria-label', `차량번호 ${num}`);
-      btn.tabIndex = 0;
-      btn.onclick = () => {
-        enteredPlate = num;
-        updateBreadcrumb();
-        nextStep();
-      };
-      btn.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') btn.click();
-      };
-      plateGridDiv.appendChild(btn);
-      setTimeout(() => btn.classList.remove('fade-in'), 250);
-    });
+    const total = filtered.length;
+    const maxRow = Math.ceil(list.length / 3);
+    plateGridDiv.style.gridTemplateRows = `repeat(${maxRow}, 1fr)`;
+    for (let i = 0; i < maxRow * 3; i++) {
+      if (i < total) {
+        const num = filtered[i];
+        const btn = document.createElement('button');
+        btn.className = 'plate-btn fade-in';
+        btn.textContent = num;
+        btn.setAttribute('aria-label', `차량번호 ${num}`);
+        btn.tabIndex = 0;
+        btn.onclick = () => {
+          showModal(`차량번호 : ${num}가 맞으십니까?`, (ok) => {
+            if (!ok) return;
+            enteredPlate = num;
+            updateBreadcrumb();
+            nextStep();
+          });
+        };
+        btn.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') btn.click();
+        };
+        plateGridDiv.appendChild(btn);
+        setTimeout(() => btn.classList.remove('fade-in'), 250);
+      } else {
+        const empty = document.createElement('div');
+        empty.style.visibility = 'hidden';
+        plateGridDiv.appendChild(empty);
+      }
+    }
   }
   filterInput.addEventListener('input', renderGrid);
   renderGrid();
